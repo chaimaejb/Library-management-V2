@@ -1,0 +1,23 @@
+IMPROVEMENT PATHS:
+
+=> Sign up / logging :  DONE-Check each input; dont accept empty ones  
+                        DONE-For already existing user name give instant message
+                        DONE-In sign up exige the pass conditions; more than 6 chars, do a doublecheck for security
+                        DONE-Make membership options easier, just tap char or num
+                        DONE-For security limit the attempting to enter the pass
+
+=> CLI : DONE-Give a break befor re-running the menu, work on messages after executions
+
+
+=> Models : -Add extra book details; number of pages, language
+            DONE-For title/author inputs, tolerate char case (upper, lower) 
+
+=> Services :   DONE-To remove a book, make sure that it's available in the library
+                DONE-Avoid adding an existing book           # in large scale may add quantity arg 
+                DONE-Add validation to end membership
+                DONE-While check in make sure that borrowed book by the owner to limit options
+                DONE-Make sure that the next one who can borrow a book is the first in the waiting list, and set a time limit to pass to the next one
+                DONE-Clear notifications
+
+=> Data :   DONE-Delete data saved in the wrong path while testing remove book and block member
+            DONE-Save internalLaw.json/waitingList.json/notifacations.json/borrowedBooks.json in data file
