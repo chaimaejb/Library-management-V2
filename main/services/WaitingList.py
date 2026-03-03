@@ -17,10 +17,11 @@ class WaitingList:
 
   @staticmethod
   def get_next_member(book):
-    if WaitingList.waiting_list[book.id]:
-      next_member = WaitingList.waiting_list[book.id].pop(0)
-      WaitingListData.save_queue(WaitingList.waiting_list)
-      return next_member
+    queue = WaitingList.waiting_list.get(book.id)
+    if queue:
+        next_member = queue.pop(0)
+        WaitingListData.save_queue(WaitingList.waiting_list)
+        return next_member
     return None
   
   @staticmethod

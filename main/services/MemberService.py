@@ -41,6 +41,8 @@ class MemberService:
     books = WriterReader.load_all("Book", "books.json")
     members = WriterReader.load_all("Member", "members.json")
     book = next((b for b in books if b.id == book_id), None)
+    if not book:
+      return None
     first = WaitingList.get_next_member(book)
     if first:
       next_member = next((m for m in members if m.id == first), None)
