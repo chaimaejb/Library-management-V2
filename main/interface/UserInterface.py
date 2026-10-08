@@ -7,10 +7,12 @@ from dataProvider.InternalLawData import InternalLawData
 from dataProvider.Notifications import Notifications
 from model.InternalLaw import InternalLaw
 from helper.check.Password import Password
+from repositories.BookRepository import BookRepository
 
 class UI:
 
   rules = InternalLawData.load_rules()
+  book_repository = BookRepository()
 
   @staticmethod
   def run(member, is_connected):
@@ -20,11 +22,12 @@ class UI:
       print("2. Check out a book")  # CHECKED
       print("3. End membership")  # CHECKED
       print("4. Show books list")  # CHECKED
-      print("5. Discover our internal law")  #CHECKED
-      print("6. Change password")  # CHECKED
-      print("7. Report lost book")  # CHECKED
-      print("8. Clear notifications") #  CHECKED
-      print("9. Log out")
+      print("5. Search for a book")
+      print("6. Discover our internal law")  #CHECKED
+      print("7. Change password")  # CHECKED
+      print("8. Report lost book")  # CHECKED
+      print("9. Clear notifications") #  CHECKED
+      print("10. Log out")
 
       choice = input("Enter your choice: ")
 
@@ -65,9 +68,20 @@ class UI:
         print("This is a list of available books in our library: ", books_list)
 
       elif choice == "5":
-        print(UI.rules)
+        search = input("What book are you loking for? ").strip().lower()
+        if not search:
+          print("Please enter a title.")
+          continue
+        results = UI.book_repository.get_by_part_book_title(search)
+        if results:
+          print(results)
+        else:
+          print("No book found!")
 
       elif choice == "6":
+        print(UI.rules)
+
+      elif choice == "7":
         password = input("For security, enter your current password: ")
         pass_changed = False
         
@@ -84,7 +98,7 @@ class UI:
         else :
           print("Password incorrect!")
 
-      elif choice == "7":
+      elif choice == "8":
         title = input("Enter the book title: ")
         author = input("Enter author name: ")
 
@@ -93,10 +107,10 @@ class UI:
         else:
           print("Book not found!")
 
-      elif choice == "8":
+      elif choice == "9":
         Notifications.clear_notif(member.id)
 
-      elif choice == "9":
+      elif choice == "10":
         is_connected = False
 
         from interface.CLI import CLI

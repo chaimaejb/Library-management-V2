@@ -47,17 +47,12 @@ class Book(LibraryItem):
       self.__status = "Available"
       self.holder = self.check_out_date = None
 
-      from dataProvider.WriterReader import WriterReader
-      WriterReader.update(self, "Book", "books.json")
 
   def check_out(self, member):
     if self.__status == "Available":
       self.__status = "Not available"
       self.holder = member
       self.check_out_date = datetime.today().date()
-
-      from dataProvider.WriterReader import WriterReader
-      WriterReader.update(self, "Book", "books.json")
 
 
 class ReferenceBook(Book):

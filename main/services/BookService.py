@@ -1,3 +1,4 @@
+from repositories.BookRepository import BookRepository
 from dataProvider.WriterReader import WriterReader
 from dataProvider.InternalLawData import InternalLawData
 from dataProvider.BorrowedBooks import Borrowed
@@ -13,30 +14,28 @@ from services.MemberService import MemberService
 class BookService:
 
   rules = InternalLawData.load_rules()
+  book_repository = BookRepository()
 
   @staticmethod
   def add_book(title, author):
-    books = WriterReader.load_all("Book", "books.json")
 
-    book_exist = next((b for b in books if b.title.casefold() == title.casefold() and b.author.casefold() == author.casefold()), None)
+    book_exist = BookService.book_repository.get_by_title_and_author(title, author)
     if book_exist:
       print("This book is already in our library")
       return
     book = Book(title, author)
-    WriterReader.save(book, "Book", "books.json")
+    BookService.book_repository.save(book)
     print("Book added succesfully.")
   
   @staticmethod
   def remove_book(title, author):
-    books = WriterReader.load_all("Book", "books.json")
-
-    book = next((b for b in books if b.title.casefold() == title.casefold() and b.author.casefold() == author.casefold()), None)
+    book = BookService.book_repository.get_by_title_and_author(title, author)
     if not book:
       raise ValueError ("Book not found!")
     if book.status == "Not available":
       print("This book is already borrowed! try another time.")
       return 
-    WriterReader.remove(book, "books.json")
+    BookService.book_repository.delete(book)
     print("Book removed succesfully.")
 
   @staticmethod
@@ -63,8 +62,7 @@ class BookService:
 
   @staticmethod
   def mark_lost(member, title, author):
-    books = WriterReader.load_all("Book", "books.json")
-    book = next((b for b in books if b.title.casefold() == title.casefold() and b.author.casefold() == author.casefold()), None)
+    book = BookService.book_repository.get_by_title_and_author(title, author)
     if not book:
       return False
     for record in reversed(member.history):
@@ -72,18 +70,17 @@ class BookService:
         record["status"] = "lost"
         book.status = "Lost"
         WriterReader.update(member, "Member", "members.json")
-        WriterReader.update(book, "Book", "books.json")
+        BookService.book_repository.update(book)
         member.borrowing_track -= 1
         return True
 
   @staticmethod
   def check_in(title, author, member):
-    books = WriterReader.load_all("Book", "books.json")
   #  members = WriterReader.load_all("Member", "members.json")
     borrowed_books = Borrowed.load()
     by_user = borrowed_books[member.id]
 
-    book = next((b for b in books if b.title.casefold() == title.casefold() and b.author.casefold() == author.casefold()), None)
+    book = BookService.book_repository.get_by_title_and_author(title, author)
     if not book or book.id not in by_user:
       print("You never borrowed this book!")
       return
@@ -99,6 +96,7 @@ class BookService:
 
       print(f"Thank you for returning {book.title}! See you soon.")
       book.check_in()
+      BookService.book_repository.update(book)
       BookService.mark_return(member, book)
       Borrowed.turn(member.id, book.id)
       MemberService.notify_next_member(book.id)
@@ -112,10 +110,8 @@ class BookService:
     if not MemberLimit.can_borrow(member):
       print("You've acheived your limit!")
       return
-    
-    books = WriterReader.load_all("Book", "books.json")
 
-    book = next((b for b in books if b.title.casefold() == title.casefold() and b.author.casefold() == author.casefold()), None)
+    book = BookService.book_repository.get_by_title_and_author(title, author)
     if not book:
       raise ValueError ("Book not found!")
 
@@ -132,11 +128,13 @@ class BookService:
       reservation = queue.get(book.id)
       if not reservation:
         book.check_out(member)
+        BookService.book_repository.update(book)
         BookService.add_to_history(member, book)
         Borrowed.take(member.id, book.id)
         print("Have a nice lecture!")
       elif reservation and reservation["member_id"] == member.id:
         book.check_out(member)
+        BookService.book_repository.update(book)
         BookService.add_to_history(member, book)
         Borrowed.take(member.id, book.id)
         del queue[book.id]
